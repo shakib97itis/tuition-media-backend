@@ -7,12 +7,40 @@ const createLeadIntoDB = async (payload: ILead) => {
   return result;
 };
 
+const getAllLeadsFromDB = async (query: Record<string, unknown>) => {
+  const leadsQuery = new GlobalQueryBuilder(Lead.find(), query);
+  leadsQuery.search(['name', 'contact']);
+  leadsQuery.filter();
+  leadsQuery.paginate();
+
+  const result = await leadsQuery.modelQuery.populate([
+    {
+      path: 'assignedTo referredBy convertedBy',
+      select: 'full_name email phone',
+    },
+    {
+      path: 'followUps.doneBy',
+      select: 'full_name email phone',
+      model: 'Admin',
+    },
+  ]);
+
+  const count = await leadsQuery.countTotal();
+  return { result, count };
+};
+
 const getNewLeadsFromBD = async (query: Record<string, unknown>) => {
   const leadsQuery = new GlobalQueryBuilder(Lead.find({ status: 'new' }), query);
   leadsQuery.search(['name', 'contact']);
   leadsQuery.filter();
   leadsQuery.paginate();
-  const result = await leadsQuery.modelQuery;
+  const result = await leadsQuery.modelQuery.populate([
+    {
+      path: 'followUps.doneBy',
+      select: 'full_name email phone',
+      model: 'Admin',
+    },
+  ]);
   const count = await leadsQuery.countTotal();
   return { result, count };
 };
@@ -22,7 +50,17 @@ const getAssignedLeadsFromBD = async (query: Record<string, unknown>) => {
   leadsQuery.search(['name', 'contact']);
   leadsQuery.filter();
   leadsQuery.paginate();
-  const result = await leadsQuery.modelQuery.populate('assignedTo');
+  const result = await leadsQuery.modelQuery.populate([
+    {
+      path: 'assignedTo referredBy convertedBy',
+      select: 'full_name email phone',
+    },
+    {
+      path: 'followUps.doneBy',
+      select: 'full_name email phone',
+      model: 'Admin',
+    },
+  ]);
   const count = await leadsQuery.countTotal();
   return { result, count };
 };
@@ -35,30 +73,55 @@ const getAssignedOwnLeadsFromBD = async (userId: string, query: Record<string, u
   leadsQuery.search(['name', 'contact']);
   leadsQuery.filter();
   leadsQuery.paginate();
-  const result = await leadsQuery.modelQuery;
+  const result = await leadsQuery.modelQuery.populate([
+    {
+      path: 'assignedTo referredBy convertedBy',
+      select: 'full_name email phone',
+    },
+    {
+      path: 'followUps.doneBy',
+      select: 'full_name email phone',
+      model: 'Admin',
+    },
+  ]);
   const count = await leadsQuery.countTotal();
   return { result, count };
 };
 
 const makeLeadAsAssignedIntoDB = async (
   id: string,
-  payload: { assignedTo: string; reffredBy: string },
+  payload: { assignedTo: string; referredBy: string },
 ) => {
   const result = await Lead.findByIdAndUpdate(
     id,
-    { status: 'assigned', assignedTo: payload.assignedTo, reffredBy: payload.reffredBy },
+    { status: 'assigned', assignedTo: payload.assignedTo, referredBy: payload.referredBy },
     { new: true },
   );
   return result;
 };
 
-const updateLeadIntoDB = async (id: string, payload: Partial<ILead>) => {
-  const result = await Lead.findByIdAndUpdate(id, payload, { new: true });
+const updateLeadIntoDB = async (id: string, payload: Partial<ILead> & { newFollowUp?: any }) => {
+  const { newFollowUp, ...otherUpdates } = payload;
+
+  const updateOps: Record<string, any> = {
+    $set: otherUpdates,
+  };
+
+  if (newFollowUp) {
+    updateOps.$push = { followUps: newFollowUp };
+  }
+
+  const result = await Lead.findByIdAndUpdate(id, updateOps, {
+    new: true,
+    runValidators: true,
+  });
+
   return result;
 };
 
 export const LeadServices = {
   createLeadIntoDB,
+  getAllLeadsFromDB,
   getNewLeadsFromBD,
   getAssignedLeadsFromBD,
   getAssignedOwnLeadsFromBD,

@@ -9,8 +9,14 @@ router.post('/create', LeadControllers.createLead);
 // * - need a api to get all leads for admin dashboard.
 
 router.get(
+  '/all',
+  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.superAdmin, ROLE.teleMarketing),
+  LeadControllers.getAllLeads,
+);
+
+router.get(
   '/new',
-  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
+  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleMarketing),
   LeadControllers.getNewLeads,
 );
 
@@ -20,18 +26,18 @@ router.get(
   LeadControllers.getAssignedLeads,
 );
 
-// ? what is the difference between own and assigned
-// * need to understand it will check later. although it's not needed now for prototype.
 router.get(
   '/assigned/own/:id',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
   LeadControllers.getAssignedOwnLeads,
 );
+
 router.patch(
   '/assigned/:id',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
   LeadControllers.makeLeadAsAssigned,
 );
+
 router.patch(
   '/update/:id',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),

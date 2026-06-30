@@ -4,6 +4,7 @@ export interface ILead {
   name: string;
   contact: string;
   details: string;
+  lead_source: string;
   assignedTo?: mongoose.Types.ObjectId;
   referredBy?: mongoose.Types.ObjectId;
   status: 'new' | 'assigned' | 'interested' | 'converted' | 'canceled';

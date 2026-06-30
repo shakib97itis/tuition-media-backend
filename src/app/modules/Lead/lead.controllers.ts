@@ -8,6 +8,11 @@ const createLead = catchAsync(async (req, res) => {
   sendResponse(res, status.CREATED, 'Lead created successfully!', result);
 });
 
+const getAllLeads = catchAsync(async (req, res) => {
+  const { result, count } = await LeadServices.getAllLeadsFromDB(req.query);
+  sendResponse(res, status.OK, 'New leads retrieved successfully!', result, count);
+});
+
 const getNewLeads = catchAsync(async (req, res) => {
   const { result, count } = await LeadServices.getNewLeadsFromBD(req.query);
   sendResponse(res, status.OK, 'New leads retrieved successfully!', result, count);
@@ -38,6 +43,7 @@ const updateLead = catchAsync(async (req, res) => {
 
 export const LeadControllers = {
   createLead,
+  getAllLeads,
   getNewLeads,
   getAssignedLeads,
   getAssignedOwnLeads,
