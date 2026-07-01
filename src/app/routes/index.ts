@@ -36,7 +36,7 @@ const mainRoutes = [
     route: ImageUploadRoutes,
   },
   {
-    path: '/leads', // checked
+    path: '/leads',
     route: LeadRoutes,
   },
   {
