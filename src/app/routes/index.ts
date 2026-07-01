@@ -16,7 +16,7 @@ const mainRoutes = [
     route: AuthenticationRoutes,
   },
   {
-    path: '/teachers', // checked
+    path: '/teachers',
     route: TeacherRoutes,
   },
   {

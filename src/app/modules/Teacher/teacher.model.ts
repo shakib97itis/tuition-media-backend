@@ -1,4 +1,4 @@
-import mongoose, { CallbackError, SaveOptions, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { ITeacher, TeacherModel } from './teacher.interface';
 import bcrypt from 'bcrypt';
 import config from '../../config';
@@ -7,7 +7,7 @@ import { Counter } from '../Counter/counter.model';
 const teacherSchema = new Schema<ITeacher, TeacherModel>(
   {
     full_name: { type: String, required: true, trim: true },
-    serial_number: { type: String },
+    serial_number: { type: String, unique: true },
     email: {
       type: String,
       required: true,
@@ -16,14 +16,12 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
       trim: true,
       index: true,
     },
-
     password: {
       type: String,
       required: true,
       select: false,
       trim: true,
     },
-
     role: {
       type: String,
       required: true,
@@ -31,21 +29,16 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
       enum: ['teacher'],
       default: 'teacher',
     },
-
     phone: { type: String, required: true },
     additional_phone: { type: String },
-
-    preset_address: { type: String },
+    present_address: { type: String },
     permanent_address: { type: String },
-
     preferred_teaching_locations: {
       city: { type: String },
       country: { type: String },
       area: { type: [String], default: [] },
     },
-
     about_me: { type: String },
-
     preferred_tutoring: {
       categories: { type: [String], default: [] },
       courses: { type: [String], default: [] },
@@ -66,7 +59,6 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
         curriculum: { type: String },
         year_of_passing: { type: Number },
       },
-
       college: {
         name: { type: String },
         gpa: { type: String },
@@ -76,7 +68,6 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
         year_of_passing: { type: Number },
         status: { type: String, enum: ['graduated', 'studying'] },
       },
-
       diploma: {
         is_diploma: { type: Boolean },
         name: { type: String },
@@ -87,7 +78,6 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
         session: { type: String },
         status: { type: String, enum: ['graduated', 'studying'] },
       },
-
       graduation: {
         name: { type: String },
         type: { type: String },
@@ -97,7 +87,6 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
         session: { type: String },
         status: { type: String, enum: ['graduated', 'studying'] },
       },
-
       post_graduation: {
         name: { type: String },
         type: { type: String },
@@ -162,10 +151,9 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
       },
     ],
 
-    is_profile_completed: {
-      // TODO: NEED TO PLAN.
-      type: Boolean,
-      default: false,
+    profile_completion: {
+      is_completed: { type: Boolean, default: false },
+      percentage: { type: Number, default: 0 },
     },
 
     is_verified: {
@@ -192,6 +180,14 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
   },
 );
 
+// --- Indexes for Optimization ---
+// teacherSchema.index({ is_deleted: 1, is_active: 1 });
+// teacherSchema.index({ 'preferred_teaching_locations.area': 1 });
+// teacherSchema.index({ 'preferred_tutoring.subjects': 1 });
+
+// --- Pre-Save Hooks (Pure Async/Await) ---
+
+// 1. Auto-increment serial number hook
 teacherSchema.pre('save', async function () {
   if (!this.isNew) return;
 
@@ -210,19 +206,21 @@ teacherSchema.pre('save', async function () {
   );
 
   const value = counter?.teacher_counter?.value ?? 1;
-
   this.serial_number = `#${value}`;
 });
 
+// 2. Encrypt Password hook
 teacherSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
-
-  const salt = await bcrypt.genSalt(Number(config.bcrypt_salt_rounds));
-  this.password = await bcrypt.hash(this.password, salt);
+  if (this.isModified('password')) {
+    const saltRounds = Number(config.bcrypt_salt_rounds) || 12;
+    const salt = await bcrypt.genSalt(saltRounds);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
 });
 
+// --- Statics ---
 teacherSchema.statics.isTeacherExistsByEmail = async function (email: string) {
-  return await this.findOne({ email }).select('+password').lean();
+  return await this.findOne({ email, is_deleted: false }).select('+password').lean();
 };
 
 teacherSchema.statics.isPasswordMatched = async function (

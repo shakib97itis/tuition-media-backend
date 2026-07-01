@@ -1,7 +1,12 @@
 import status from 'http-status';
 import AppError from '../../errors/AppError';
 import { Teacher } from '../Teacher/teacher.model';
-import { IAdminLogin, ITeacherLogin, ITeacherRegistration } from './auth.interface';
+import {
+  IAdminLogin,
+  ITeacherLogin,
+  ITeacherRegistration,
+  ITeacherUpdatePassword,
+} from './auth.interface';
 import config from '../../config';
 import { createToken, verifyToken } from '../../utils/auth';
 import { SignOptions } from 'jsonwebtoken';
@@ -132,7 +137,7 @@ const loginAdminIntoDB = async (payload: IAdminLogin) => {
   };
 };
 
-const changeTeacherPasswordIntoDB = async (id: string, payload: any) => {
+const changeTeacherPasswordIntoDB = async (id: string, payload: ITeacherUpdatePassword) => {
   const user = await Teacher.findById(id).select('+password');
   if (!user) {
     throw new AppError(status.NOT_FOUND, 'Teacher not found');
@@ -151,6 +156,7 @@ const changeTeacherPasswordIntoDB = async (id: string, payload: any) => {
   const result = await Teacher.findByIdAndUpdate(id, {
     password: newHashedPassword,
   });
+
   if (!result) {
     throw new AppError(status.INTERNAL_SERVER_ERROR, 'Password change failed');
   }

@@ -7,15 +7,15 @@ export interface ITeacher {
   password: string;
   phone: string;
   role: 'teacher';
-  additional_phone: string;
+  additional_phone?: string;
 
-  preset_address?: string;
+  present_address?: string;
   permanent_address?: string;
 
   preferred_teaching_locations?: {
     city: string;
     country: string;
-    area: [string];
+    area: string[];
   };
 
   about_me?: string;
@@ -49,7 +49,7 @@ export interface ITeacher {
       curriculum: string;
       year_of_passing?: number;
       status: 'graduated' | 'studying';
-      is_diploma_student?: boolean; // new
+      is_diploma_student?: boolean;
     };
 
     diploma?: {
@@ -74,7 +74,6 @@ export interface ITeacher {
     };
 
     post_graduation?: {
-      // new
       name: string;
       type: string;
       department: string;
@@ -89,7 +88,6 @@ export interface ITeacher {
 
   tutoring_availability?: {
     days: string[];
-    // time slot not needed
   };
 
   gender: 'male' | 'female' | 'other';
@@ -125,9 +123,13 @@ export interface ITeacher {
     certificate_url: string;
   }>;
 
-  is_profile_completed: boolean;
-  is_verified: boolean; // new
-  is_active: boolean; // new
+  profile_completion: {
+    is_completed: boolean;
+    percentage: number;
+  };
+
+  is_verified: boolean;
+  is_active: boolean;
   is_deleted: boolean;
 
   created_at?: Date;
@@ -135,6 +137,6 @@ export interface ITeacher {
 }
 
 export interface TeacherModel extends Model<ITeacher> {
-  isTeacherExistsByEmail(email: string): Promise<ITeacher>;
+  isTeacherExistsByEmail(email: string): Promise<ITeacher | null>;
   isPasswordMatched(plainTextPassword: string, hashedPassword: string): Promise<boolean>;
 }

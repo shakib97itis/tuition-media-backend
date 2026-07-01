@@ -10,6 +10,11 @@ export interface ITeacherRegistration {
   password: string;
 }
 
+export interface ITeacherUpdatePassword {
+  current_password: string;
+  new_password: string;
+}
+
 export interface IAdminLogin {
   email: string;
   password: string;
