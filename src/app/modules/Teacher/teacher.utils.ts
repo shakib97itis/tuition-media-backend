@@ -46,7 +46,7 @@ export const calculateProfileCompletion = (
 
   // 5. Higher Secondary Level: College OR Diploma (10%)
   // Ensures teachers who went the polytechnic/diploma route aren't penalized for skipping college
-  if (ed?.college?.name || ed?.diploma?.name) {
+  if (ed?.college?.name) {
     percentage += 10;
   }
 

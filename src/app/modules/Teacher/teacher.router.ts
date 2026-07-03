@@ -1,27 +1,33 @@
 import express from 'express';
-import { TeacherControllers } from './teacher.controllers';
 import authMiddleware from '../../middleware/authMiddleware';
 import { ROLE } from '../../types/role';
+import { TeacherControllers } from './teacher.controllers';
 
 const router = express.Router();
 
-// * Publicly available Routes
+const STAFF_ROLES = [ROLE.admin, ROLE.superAdmin, ROLE.teleMarketing, ROLE.teleSales];
+
+// ==========================================
+// PUBLIC ROUTES
+// ==========================================
 router.get('/public', TeacherControllers.getAllPublicTeachers);
-router.get('/public/profile/:id', TeacherControllers.getSinglePublicTeacher);
+router.get('/public/:id', TeacherControllers.getSinglePublicTeacher);
 
-// * Private admin panel Routes
-router.get(
-  '/admin/private',
-  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleMarketing, ROLE.teleSales),
-  TeacherControllers.getAllPrivateTeachers,
-);
-
-// * Logged in teacher Routes
-router.get(
-  '/own/profile/:id',
+// ==========================================
+// LOGGED-IN TEACHER ROUTES (Self-Management)
+// ==========================================
+router.get('/profile/:id', authMiddleware(ROLE.teacher), TeacherControllers.getTeacherSelfProfile);
+router.patch(
+  '/profile/:id',
   authMiddleware(ROLE.teacher),
-  TeacherControllers.getSinglePrivateTeacher,
+  TeacherControllers.updateTeacherSelfProfile,
 );
-router.patch('/profile/update/:id', authMiddleware(ROLE.teacher), TeacherControllers.updateTeacher);
+
+// ==========================================
+// ADMIN PANEL ROUTES
+// ==========================================
+router.get('/', authMiddleware(...STAFF_ROLES), TeacherControllers.getAllPrivateTeachers);
+router.get('/:id', authMiddleware(...STAFF_ROLES), TeacherControllers.getSinglePrivateTeacher);
+router.patch('/:id', authMiddleware(...STAFF_ROLES), TeacherControllers.updateTeacherByAdmin);
 
 export const TeacherRoutes = router;

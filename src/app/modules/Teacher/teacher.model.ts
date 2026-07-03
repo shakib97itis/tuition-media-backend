@@ -6,8 +6,11 @@ import { Counter } from '../Counter/counter.model';
 
 const teacherSchema = new Schema<ITeacher, TeacherModel>(
   {
+    // overview & Personal details
+    about_me: { type: String },
     full_name: { type: String, required: true, trim: true },
-    serial_number: { type: String, unique: true },
+    phone: { type: String, required: true },
+    additional_phone: { type: String },
     email: {
       type: String,
       required: true,
@@ -16,29 +19,26 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
       trim: true,
       index: true,
     },
-    password: {
+    gender: {
       type: String,
-      required: true,
-      select: false,
-      trim: true,
+      enum: ['male', 'female', 'other'],
     },
-    role: {
+    religion: { type: String },
+    date_of_birth: { type: Date },
+    blood_group: {
       type: String,
-      required: true,
-      trim: true,
-      enum: ['teacher'],
-      default: 'teacher',
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
     },
-    phone: { type: String, required: true },
-    additional_phone: { type: String },
+    marital_status: {
+      type: String,
+      enum: ['unmarried', 'married'],
+    },
+    serial_number: { type: String, unique: true },
     present_address: { type: String },
     permanent_address: { type: String },
-    preferred_teaching_locations: {
-      city: { type: String },
-      country: { type: String },
-      area: { type: [String], default: [] },
-    },
-    about_me: { type: String },
+
+    // Tutoring Preferences
+    years_of_experience: { type: Number },
     preferred_tutoring: {
       categories: { type: [String], default: [] },
       courses: { type: [String], default: [] },
@@ -49,95 +49,65 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
         max: { type: Number },
       },
     },
+    tutoring_availability: {
+      days: { type: [String], default: [] },
+    },
+    preferred_teaching_locations: {
+      country: { type: String },
+      city: { type: String },
+      area: { type: [String], default: [] },
+    },
 
+    // Academic Credentials
     education: {
       school: {
         name: { type: String },
-        gpa: { type: String },
         group: { type: String },
-        board: { type: String },
         curriculum: { type: String },
+        board: { type: String },
+        grade: { type: String }, // GPA
         year_of_passing: { type: Number },
       },
       college: {
         name: { type: String },
-        gpa: { type: String },
-        group: { type: String },
-        board: { type: String },
+        group: { type: String }, // GPA
         curriculum: { type: String },
+        board: { type: String },
+        grade: { type: String },
         year_of_passing: { type: Number },
-        status: { type: String, enum: ['graduated', 'studying'] },
-      },
-      diploma: {
-        is_diploma: { type: Boolean },
-        name: { type: String },
-        type: { type: String },
-        department: { type: String },
-        study_level: { type: String },
-        cgpa: { type: String },
-        session: { type: String },
-        status: { type: String, enum: ['graduated', 'studying'] },
       },
       graduation: {
         name: { type: String },
-        type: { type: String },
-        department: { type: String },
-        study_level: { type: String },
-        gpa: { type: String },
-        session: { type: String },
-        status: { type: String, enum: ['graduated', 'studying'] },
+        department: { type: String }, // Which subjects they studied in graduation.
+        type: { type: String, enum: ['public', 'private'] },
+        grade: { type: String }, // CGPA
+        status: { type: String }, // first to forth year or graduation completed.
+        year_of_passing: { type: Number }, // if status is graduation completed then we will ask for year.
       },
       post_graduation: {
         name: { type: String },
-        type: { type: String },
         department: { type: String },
-        study_level: { type: String },
-        gpa: { type: String },
-        session: { type: String },
-        status: { type: String, enum: ['graduated', 'studying'] },
+        type: { type: String, enum: ['public', 'private'] },
+        grade: { type: String }, // CGPA
+        status: { type: String },
+        year_of_passing: { type: Number },
       },
     },
 
-    years_of_experience: { type: Number },
-
-    tutoring_availability: {
-      days: { type: [String], default: [] },
-    },
-
-    gender: {
-      type: String,
-      enum: ['male', 'female', 'other'],
-    },
-
-    date_of_birth: { type: Date },
-
-    blood_group: {
-      type: String,
-      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-    },
-
-    profile_picture: { type: String },
-
-    religion: { type: String },
-
-    marital_status: {
-      type: String,
-      enum: ['unmarried', 'married'],
-    },
-
+    // Family & Verification Documents
     parents_info: {
       father_name: { type: String },
       father_phone: { type: String },
       mother_name: { type: String },
       mother_phone: { type: String },
-      emergency_contact_name: { type: String },
-      emergency_contact_phone: { type: String },
+      other_contact_name: { type: String },
+      other_contact_phone: { type: String },
     },
 
     identification: {
       type: {
         type: String,
-        enum: ['passport', 'nid', 'driving_license', 'birth_certificate'],
+        enum: ['passport', 'nid', 'birth_certificate'],
       },
       number: { type: String },
       front_image: { type: String },
@@ -151,6 +121,7 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
       },
     ],
 
+    // others fields
     profile_completion: {
       is_completed: { type: Boolean, default: false },
       percentage: { type: Number, default: 0 },
@@ -170,6 +141,23 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
       type: Boolean,
       default: false,
     },
+
+    profile_picture: { type: String },
+
+    role: {
+      type: String,
+      required: true,
+      trim: true,
+      enum: ['teacher'],
+      default: 'teacher',
+    },
+
+    password: {
+      type: String,
+      required: true,
+      select: false,
+      trim: true,
+    },
   },
   {
     timestamps: {
@@ -179,11 +167,6 @@ const teacherSchema = new Schema<ITeacher, TeacherModel>(
     versionKey: false,
   },
 );
-
-// --- Indexes for Optimization ---
-// teacherSchema.index({ is_deleted: 1, is_active: 1 });
-// teacherSchema.index({ 'preferred_teaching_locations.area': 1 });
-// teacherSchema.index({ 'preferred_tutoring.subjects': 1 });
 
 // --- Pre-Save Hooks (Pure Async/Await) ---
 
