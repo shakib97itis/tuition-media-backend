@@ -5,24 +5,54 @@ import { ROLE } from '../../types/role';
 
 const router = express.Router();
 
-// ! - 1 user should not apply multiple times for a single job.
+// ==========================================
+//          TEACHER-FACING ROUTES
+// ==========================================
+
+// Teacher applies for an open tuition job posting
 router.post(
-  '/apply',
-  authMiddleware(ROLE.teacher, ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
-  AppliedApplicationControllers.applyForJob,
+  '/teacher/apply/:teacherId',
+  authMiddleware(ROLE.teacher),
+  AppliedApplicationControllers.applyForJobByTeacher,
 );
 
-// ! - should fix this. should be able to get all applications by job id.
-// ! - shows an error Schema hasn't been registered for model \"User\".\nUse mongoose.model(name, schema)
+// Retrieve all applications submitted by the authenticated teacher
 router.get(
-  '/job/:id',
-  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
-  AppliedApplicationControllers.getApplicationsByJobId,
-);
-router.get(
-  '/applicant/:id',
+  '/teacher/my-applications/:teacherId',
   authMiddleware(ROLE.teacher),
-  AppliedApplicationControllers.getApplicationsByApplicantId,
+  AppliedApplicationControllers.getApplicationsForTeacher,
+);
+
+// Fetch application status count metrics for the teacher's dashboard analytics
+router.get(
+  '/teacher/my-stats/:teacherId',
+  authMiddleware(ROLE.teacher),
+  AppliedApplicationControllers.getStatsForTeacher,
+);
+
+// ==========================================
+//          ADMIN-FACING ROUTES
+// ==========================================
+
+// Admin views the list of teachers who applied for a specific job
+router.get(
+  '/admin/job/:jobId',
+  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
+  AppliedApplicationControllers.getApplicationsForAdmin,
+);
+
+// Admin manually inserts a teacher into a job shortlist (Sourcing)
+router.post(
+  '/admin/source-teacher/:adminId',
+  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
+  AppliedApplicationControllers.sourceTeacherByAdmin,
+);
+
+// Admin updates the pipeline tracking state of an application
+router.patch(
+  '/admin/application/:applicationId/status',
+  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
+  AppliedApplicationControllers.updateApplicationStatusByAdmin,
 );
 
 export const AppliedApplicationRoutes = router;
