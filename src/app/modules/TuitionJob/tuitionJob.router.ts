@@ -5,35 +5,53 @@ import authMiddleware from '../../middleware/authMiddleware';
 
 const router = express.Router();
 
-// Public api
-router.get('/', TuitionJobControllers.getAllTuitionJobsForTeacher);
-// private api.
-// ! - it shows invalid id. should fix it.
+// ==========================================
+//         PRIVATE ROUTES (ADMIN)
+// ==========================================
+
+// Create a new tuition job entry
+router.post(
+  '/admin/create',
+  authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
+  TuitionJobControllers.createTuitionJobFromAdmin,
+);
+
+// Get all tuition jobs with comprehensive filters, search, and full operational data
 router.get(
   '/admin',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
   TuitionJobControllers.getAllTuitionJobsForAdmin,
 );
 
+// Get all confirmed/running tuition jobs for administrative logging
 router.get(
   '/admin/running',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
   TuitionJobControllers.getAllRunningJobsForAdmin,
 );
 
-router.get('/:id', TuitionJobControllers.getTuitionJobById);
-
-// * - They are working fine. need check again after admin get all tuition jobs fixed
-router.post(
-  '/create',
+// Get complete details of a single tuition job (including sensitive metadata and contact info)
+router.get(
+  '/admin/:id',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
-  TuitionJobControllers.createTuitionJob,
+  TuitionJobControllers.getTuitionJobByIdForAdmin,
 );
 
+// Update tuition job lifecycle states or configurations
 router.patch(
-  '/update/:id',
+  '/admin/update/:id',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
-  TuitionJobControllers.updateTuitionJobById,
+  TuitionJobControllers.updateTuitionJobByIdFromAdmin,
 );
+
+// ==========================================
+//         PUBLIC ROUTES (TEACHER)
+// ==========================================
+
+// Get all available tuition jobs (Sanitized and restricted by active states)
+router.get('/', TuitionJobControllers.getAllTuitionJobsForTeacher);
+
+// Get public profile details of a single tuition job by ID
+router.get('/:id', TuitionJobControllers.getTuitionJobByIdForTeacher);
 
 export const TuitionJobRouter = router;

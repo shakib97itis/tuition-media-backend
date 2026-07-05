@@ -4,53 +4,62 @@ import { Counter } from '../Counter/counter.model';
 
 const TuitionJobSchema: Schema<ITuitionJob> = new Schema(
   {
-    // private data
+    // --- Source & Internal Meta ---
     lead_from: { type: Schema.Types.ObjectId, required: true, ref: 'Lead' },
-    posted_by: { type: Schema.Types.ObjectId, required: true, ref: 'Admin' },
+    posted_by: { type: Schema.Types.ObjectId, required: true, ref: 'Admin' }, // Original creator
+    assigned_admin: { type: Schema.Types.ObjectId, ref: 'Admin', default: null }, // Currently handling admin
+    assigned_tutor: { type: Schema.Types.ObjectId, ref: 'Tutor', default: null },
     contact: { type: String, required: true },
-    serial_number: { type: String },
-    // public data.
-    title: { type: String, required: true },
+    additional_contact: { type: String },
+    serial_number: { type: String, unique: true }, // Auto-assigned alphanumeric identifier for customer support mapping
+    conversion_note: { type: String, trim: true }, // Explanatory logging from Lead-to-Job manual conversions
+
+    // --- Public Posting Data ---
+    title: { type: String, required: true, trim: true },
+
+    // --- Student Information ---
+
     student_gender: { type: String, enum: ['male', 'female', 'other'], required: true },
-
-    // Should match with teacher preference data.
-    category: { type: String, enum: ['bangla', 'english', 'both'], required: true },
-    course: { type: String, required: true },
-    subjects: { type: [String], required: true },
-
-    number_of_students: { type: Number, required: true },
-
-    tutoring_type: { type: String, enum: ['home', 'online', 'batch'], required: true },
+    number_of_students: { type: Number, required: true, default: 1 },
+    tutoring_type: { type: String, enum: ['home', 'online', 'batch'], required: true, index: true },
+    student_education: {
+      category: { type: String, required: true, index: true }, // Broad classification grouping, e.g., "School", "Admission Test"
+      course: { type: String, required: true }, // Targeted level, e.g., "Class 10", "HSC"
+      subjects: { type: [String], required: true, index: true }, // Multi-value index for localized filtering arrays
+    },
     location: {
-      address: { type: String, required: true },
+      full_address: { type: String, required: true },
       country: { type: String, required: true },
-      area: { type: String, required: true },
-      city: { type: String, required: true },
+      city: { type: String, required: true, index: true },
+      area: { type: String, required: true, index: true },
       latitude: { type: Number },
       longitude: { type: Number },
     },
 
+    // --- Schedule & Timing ---
     days_per_week: { type: Number, required: true },
-    preferred_days: { type: [String] }, // no need.
-    preferred_time: { type: String, required: true }, // morning, evening or afternoon
+    preferred_time: { type: String, required: true }, // Text description block, e.g., "Evening", "04:00 PM"
 
+    // --- Financial ---
     salary: {
-      min: { type: Number, required: true },
-      max: { type: Number, required: true },
-      expected: { type: Number, required: true },
-      type: { type: String, enum: ['monthly', 'per_class'], required: true }, // no need
+      min: { type: Number },
+      max: { type: Number },
+      negotiable: { type: Boolean, default: false }, // Fallback boolean flag if no numeric targets are provided
+      rate_type: { type: String, enum: ['monthly', 'per_class', 'per_week'], default: 'monthly' }, // Payroll baseline cycle
+      actual_salary: { type: Number }, // Locked-in transaction cost designated during contract closing state
     },
 
-    tutor_gender: { type: String, enum: ['male', 'female'], required: true },
-    tutor_qualification: { type: String, required: true }, // public or private or national university.
-    tutor_experience_years: { type: Number, required: true }, // no need
+    // --- Tutor Requirements ---
+    tutor_gender: { type: String, enum: ['male', 'female', 'any'], required: true, default: 'any' },
+    tutor_qualification: { type: [String], required: true }, // Institutional background preferences, e.g., ["BUET", "DU", "Public University"]
+    special_requirements: { type: String, trim: true },
 
-    special_requirements: { type: String },
-
+    // --- Overall Job Status ---
     status: {
       type: String,
-      enum: ['open', 'assigned', 'demo', 'follow-up', 'confirmed', 'cancelled'],
+      enum: ['draft', 'open', 'assigned', 'demo', 'follow-up', 'confirmed', 'cancelled'],
       default: 'open',
+      index: true,
     },
   },
   {
@@ -59,30 +68,22 @@ const TuitionJobSchema: Schema<ITuitionJob> = new Schema(
   },
 );
 
+// Indexes for high-traffic query lookups
+// TuitionJobSchema.index({ status: 1, tutoring_type: 1 });
+// TuitionJobSchema.index({ 'location.city': 1, 'location.area': 1 });
+
+// Middleware for ID auto-generation
 TuitionJobSchema.pre('save', async function () {
   if (!this.isNew) return;
 
   const counter = await Counter.findOneAndUpdate(
     {},
-    {
-      $inc: {
-        'job_counter.value': 1,
-      },
-    },
-    {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: true,
-    },
+    { $inc: { 'job_counter.value': 1 } },
+    { new: true, upsert: true, setDefaultsOnInsert: true },
   );
 
   const value = counter?.job_counter?.value ?? 1;
-
-  this.serial_number = `#${value}`;
+  this.serial_number = `#TJ${String(value).padStart(5, '0')}`;
 });
-
-// TuitionJobSchema.index({ 'location.city': 1 });
-// TuitionJobSchema.index({ subjects: 1 });
-// TuitionJobSchema.index({ 'salary.amount': 1 });
 
 export const TuitionJob = mongoose.model<ITuitionJob>('TuitionJob', TuitionJobSchema);
