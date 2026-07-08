@@ -4,21 +4,29 @@ import { Counter } from '../Counter/counter.model';
 
 const TuitionJobSchema: Schema<ITuitionJob> = new Schema(
   {
-    // --- Source & Internal Meta ---
+    // --- Source & Internal private data ---
     lead_from: { type: Schema.Types.ObjectId, required: true, ref: 'Lead' },
     posted_by: { type: Schema.Types.ObjectId, required: true, ref: 'Admin' }, // Original creator
     assigned_admin: { type: Schema.Types.ObjectId, ref: 'Admin', default: null }, // Currently handling admin
     assigned_tutor: { type: Schema.Types.ObjectId, ref: 'Tutor', default: null },
-    contact: { type: String, required: true },
-    additional_contact: { type: String },
     serial_number: { type: String, unique: true }, // Auto-assigned alphanumeric identifier for customer support mapping
     conversion_note: { type: String, trim: true }, // Explanatory logging from Lead-to-Job manual conversions
+    status: {
+      type: String,
+      enum: ['draft', 'open', 'assigned', 'demo', 'follow-up', 'confirmed', 'cancelled'],
+      default: 'open',
+      index: true,
+    },
+
+    // --- Contact Details ---
+    contact: { type: String, required: true },
+    additional_contact: { type: String },
 
     // --- Public Posting Data ---
     title: { type: String, required: true, trim: true },
+    job_description: { type: String, trim: true },
 
     // --- Student Information ---
-
     student_gender: { type: String, enum: ['male', 'female', 'other'], required: true },
     number_of_students: { type: Number, required: true, default: 1 },
     tutoring_type: { type: String, enum: ['home', 'online', 'batch'], required: true, index: true },
@@ -36,31 +44,24 @@ const TuitionJobSchema: Schema<ITuitionJob> = new Schema(
       longitude: { type: Number },
     },
 
+    // --- Tutor Requirements ---
+    tutor_gender: { type: String, enum: ['male', 'female', 'any'], required: true, default: 'any' },
+    tutor_qualification: { type: [String], required: true }, // Institutional background preferences, e.g., ["BUET", "DU", "Public University"]
+
+    // --- Schedule & Salary ---
+    salary: {
+      min: { type: Number },
+      max: { type: Number },
+      rate_type: { type: String, enum: ['monthly', 'per_class', 'per_week'], default: 'monthly' }, // Payroll baseline cycle
+      negotiable: { type: Boolean, default: false }, // Fallback boolean flag if no numeric targets are provided
+      actual_salary: { type: Number }, // Locked-in transaction cost designated during contract closing state
+    },
+
     // --- Schedule & Timing ---
     days_per_week: { type: Number, required: true },
     preferred_time: { type: String, required: true }, // Text description block, e.g., "Evening", "04:00 PM"
 
-    // --- Financial ---
-    salary: {
-      min: { type: Number },
-      max: { type: Number },
-      negotiable: { type: Boolean, default: false }, // Fallback boolean flag if no numeric targets are provided
-      rate_type: { type: String, enum: ['monthly', 'per_class', 'per_week'], default: 'monthly' }, // Payroll baseline cycle
-      actual_salary: { type: Number }, // Locked-in transaction cost designated during contract closing state
-    },
-
-    // --- Tutor Requirements ---
-    tutor_gender: { type: String, enum: ['male', 'female', 'any'], required: true, default: 'any' },
-    tutor_qualification: { type: [String], required: true }, // Institutional background preferences, e.g., ["BUET", "DU", "Public University"]
     special_requirements: { type: String, trim: true },
-
-    // --- Overall Job Status ---
-    status: {
-      type: String,
-      enum: ['draft', 'open', 'assigned', 'demo', 'follow-up', 'confirmed', 'cancelled'],
-      default: 'open',
-      index: true,
-    },
   },
   {
     timestamps: true,

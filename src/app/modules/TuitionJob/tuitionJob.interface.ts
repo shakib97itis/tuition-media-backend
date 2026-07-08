@@ -6,13 +6,12 @@ export interface ITuitionJob extends Document {
   posted_by: Types.ObjectId;
   assigned_tutor?: Types.ObjectId | null;
   assigned_admin?: Types.ObjectId | null;
-  contact: string;
-  additional_contact: string;
   serial_number?: string;
   conversion_note?: string;
 
   // --- Public Posting Data ---
   title: string;
+  job_description: string;
 
   // --- Student Information ---
   student_gender: 'male' | 'female' | 'other';
@@ -23,7 +22,6 @@ export interface ITuitionJob extends Document {
     course: string;
     subjects: string[];
   };
-
   // --- Geographic Routing Data ---
   location: {
     full_address: string;
@@ -33,6 +31,8 @@ export interface ITuitionJob extends Document {
     latitude?: number;
     longitude?: number;
   };
+  contact: string;
+  additional_contact: string;
 
   // --- Schedule & Timing ---
   days_per_week: number;

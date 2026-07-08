@@ -128,7 +128,7 @@ const getAllTuitionJobsForTeacherFromDB = async (query: Record<string, unknown>)
 
   // Exclude private administrative properties and direct contact details
   const result = await jobQuery.modelQuery.select(
-    '-contact -additional_contact -lead_from -posted_by -conversion_note',
+    '-lead_from -posted_by -assigned_admin -assigned_tutor -conversion_note -contact -additional_contact',
   );
   const count = await jobQuery.countTotal();
 
@@ -143,7 +143,9 @@ const getTuitionJobByIdForTeacherFromDB = async (id: string) => {
   const result = await TuitionJob.findOne({
     _id: id,
     status: { $in: ['open', 'assigned', 'demo', 'follow-up'] },
-  }).select('-contact -additional_contact -lead_from -posted_by -conversion_note');
+  }).select(
+    '-lead_from -posted_by -assigned_admin -assigned_tutor -conversion_note -contact -additional_contact',
+  );
   return result;
 };
 
