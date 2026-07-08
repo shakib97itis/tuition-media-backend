@@ -12,7 +12,7 @@ const router = express.Router();
 
 const mainRoutes = [
   {
-    path: '/auth', // checked
+    path: '/auth',
     route: AuthenticationRoutes,
   },
   {
@@ -20,19 +20,19 @@ const mainRoutes = [
     route: TeacherRoutes,
   },
   {
-    path: '/admins', // checked
+    path: '/admins',
     route: AdminRoutes,
   },
   {
-    path: '/tuition-jobs', // checked
+    path: '/tuition-jobs',
     route: TuitionJobRouter,
   },
   {
-    path: '/apply-applications', // checked
+    path: '/apply-applications',
     route: AppliedApplicationRoutes,
   },
   {
-    path: '/media-upload', // * will check later.
+    path: '/media-upload',
     route: ImageUploadRoutes,
   },
   {
@@ -40,7 +40,7 @@ const mainRoutes = [
     route: LeadRoutes,
   },
   {
-    path: '/direct-leads', // checked
+    path: '/direct-leads',
     route: TeacherLeadRouter,
   },
 ];
