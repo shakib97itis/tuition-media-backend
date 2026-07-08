@@ -3,6 +3,7 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { LeadServices } from './lead.services';
 
+
 const createLead = catchAsync(async (req, res) => {
   const result = await LeadServices.createLeadIntoDB(req.body);
   sendResponse(res, status.CREATED, 'Lead created successfully!', result);

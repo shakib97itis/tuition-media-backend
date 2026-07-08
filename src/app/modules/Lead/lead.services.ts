@@ -2,7 +2,7 @@ import GlobalQueryBuilder from '../../queryBuilder/GlobalQuaryBuilder';
 import { ILead } from './lead.interface';
 import { Lead } from './lead.model';
 
-const createLeadIntoDB = async (payload: ILead) => {
+const createLeadIntoDB = async (payload: Partial<ILead>) => {
   const result = await Lead.create(payload);
   return result;
 };

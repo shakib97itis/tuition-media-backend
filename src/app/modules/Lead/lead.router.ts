@@ -5,9 +5,10 @@ import { ROLE } from '../../types/role';
 
 const router = express.Router();
 
+// Public routes.
 router.post('/create', LeadControllers.createLead);
-// * - need a api to get all leads for admin dashboard.
 
+// Private admin routes
 router.get(
   '/all',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.superAdmin, ROLE.teleMarketing),
