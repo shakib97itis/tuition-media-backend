@@ -1,25 +1,36 @@
 import express from 'express';
 import { AdminControllers } from './admin.controllers';
+import authMiddleware from '../../middleware/authMiddleware';
+import { ROLE } from '../../types/role';
 
 const router = express.Router();
-// ! - only super admins should have access to all this routes.
-// ? - will the existing auth middleware will do the job?
-// * - we have to setup the auth middleware here.
+// Special route for super Admin.
 
-// ! - allowed ip should not visible to user.
-router.get('/', AdminControllers.getAllAdmins);
-router.get('/:id', AdminControllers.getSingleAdmin);
+// Routes for superAdmin and admin.
+router.get('/', authMiddleware(ROLE.superAdmin, ROLE.admin), AdminControllers.getAllAdmins);
+router.get('/:id', authMiddleware(ROLE.superAdmin, ROLE.admin), AdminControllers.getSingleAdmin);
 
 // ! SuperAdmin should not be able to create another super admin.
 // ! Only superAdmin should have the ability to create another admin.
 // ! Same goes for other route. update and delete.
-router.post('/create', AdminControllers.createAdmin);
+router.post('/create', authMiddleware(ROLE.superAdmin), AdminControllers.createAdmin);
 
-// ? - when i update admin user password then i can't login don't know why is that.
-router.patch('/update/:id', AdminControllers.updateAdmin);
+router.patch(
+  '/update/:id',
+  authMiddleware(ROLE.superAdmin, ROLE.admin),
+  AdminControllers.updateAdmin,
+);
 
 // * - didn't checked this two routes.
-router.delete('/delete/:id', AdminControllers.deleteAdmin);
-router.patch('/restore/:id', AdminControllers.restoreAdmin);
+router.delete(
+  '/delete/:id',
+  authMiddleware(ROLE.superAdmin, ROLE.admin),
+  AdminControllers.deleteAdmin,
+);
+router.patch(
+  '/restore/:id',
+  authMiddleware(ROLE.superAdmin, ROLE.admin),
+  AdminControllers.restoreAdmin,
+);
 
 export const AdminRoutes = router;

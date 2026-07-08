@@ -19,7 +19,8 @@ const getSingleAdmin = catchAsync(async (req, res) => {
 });
 
 const updateAdmin = catchAsync(async (req, res) => {
-  const result = await AdminServices.updateAdminIntoDB(req.params.id as string, req.body);
+  const { password, ...allowedBody } = req.body;
+  const result = await AdminServices.updateAdminIntoDB(req.params.id as string, allowedBody);
   sendResponse(res, status.OK, 'Admin updated successfully!', result);
 });
 
