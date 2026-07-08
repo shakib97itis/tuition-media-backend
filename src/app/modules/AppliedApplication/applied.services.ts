@@ -14,6 +14,7 @@ const applyForJobByTeacherIntoDB = async (teacherId: string, jobId: string) => {
     job: jobId,
     applicant: teacherId,
   });
+  
   if (existingApplication) {
     throw new AppError(status.BAD_REQUEST, 'You have already applied for this tuition job.');
   }
@@ -80,7 +81,7 @@ const getApplicationsForAdminFromDB = async (jobId: string, query: Record<string
   const applicationQuery = new GlobalQueryBuilder(AppliedApplication.find({ job: jobId }), query);
 
   applicationQuery.paginate();
-  const result = await applicationQuery.modelQuery.populate('applicant'); // Pulls matching Teacher info
+  const result = await applicationQuery.modelQuery.populate('applicant');
   const count = await applicationQuery.countTotal();
 
   return { result, count };

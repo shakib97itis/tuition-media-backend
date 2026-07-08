@@ -11,7 +11,7 @@ const router = express.Router();
 
 // Teacher applies for an open tuition job posting
 router.post(
-  '/teacher/apply/:teacherId',
+  '/teacher/apply',
   authMiddleware(ROLE.teacher),
   AppliedApplicationControllers.applyForJobByTeacher,
 );
@@ -43,7 +43,7 @@ router.get(
 
 // Admin manually inserts a teacher into a job shortlist (Sourcing)
 router.post(
-  '/admin/source-teacher/:adminId',
+  '/admin/source-teacher',
   authMiddleware(ROLE.admin, ROLE.superAdmin, ROLE.teleSales),
   AppliedApplicationControllers.sourceTeacherByAdmin,
 );

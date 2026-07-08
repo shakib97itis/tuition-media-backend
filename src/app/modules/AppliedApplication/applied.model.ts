@@ -3,8 +3,8 @@ import { IAppliedApplication } from './applied.interface';
 
 const AppliedApplicationSchema: Schema<IAppliedApplication> = new Schema(
   {
-    job: { type: Schema.Types.ObjectId, required: true, ref: 'TuitionJob', index: true },
-    applicant: { type: Schema.Types.ObjectId, required: true, ref: 'Teacher', index: true },
+    job: { type: Schema.Types.ObjectId, required: true, ref: 'TuitionJob', index: true }, // will populate
+    applicant: { type: Schema.Types.ObjectId, required: true, ref: 'Teacher', index: true }, // will populate
 
     // --- Application Status ---
     status: {
@@ -23,7 +23,7 @@ const AppliedApplicationSchema: Schema<IAppliedApplication> = new Schema(
     },
 
     // --- Admin Sourcing Meta ---
-    managed_by: { type: Schema.Types.ObjectId, ref: 'Admin', default: null },
+    managed_by: { type: Schema.Types.ObjectId, ref: 'Admin', default: null }, // will populate
   },
   {
     timestamps: true,

@@ -5,10 +5,9 @@ import { AppliedApplicationServices } from './applied.services';
 
 // Teacher-driven: Submit a job application
 const applyForJobByTeacher = catchAsync(async (req, res) => {
-  const teacherId = req.params.teacherId as string;
-  const { job } = req.body; // Job ID
+  const { teacherId, jobId } = req.body;
 
-  const result = await AppliedApplicationServices.applyForJobByTeacherIntoDB(teacherId, job);
+  const result = await AppliedApplicationServices.applyForJobByTeacherIntoDB(teacherId, jobId);
   sendResponse(res, status.CREATED, 'Applied for job successfully', result);
 });
 
@@ -44,8 +43,9 @@ const getApplicationsForAdmin = catchAsync(async (req, res) => {
 
 // Admin-driven: Create an authenticated sourcing placement entry manually
 const sourceTeacherByAdmin = catchAsync(async (req, res) => {
-  const adminId = req.params.adminId as string;
-  const result = await AppliedApplicationServices.sourceTeacherByAdminIntoDB(adminId, req.body);
+  const { adminId, ...payload } = req.body;
+
+  const result = await AppliedApplicationServices.sourceTeacherByAdminIntoDB(adminId, payload);
 
   sendResponse(res, status.CREATED, 'Teacher sourced and shortlisted successfully', result);
 });
